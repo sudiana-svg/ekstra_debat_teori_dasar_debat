@@ -1,0 +1,317 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tic Tac Toe - Teori Dasar Debat</title><style>
+:root{--bg:#eaf3e6;--ink:#10321f;--card:#fff;--x:#2563eb;--o:#dc2626;--g:#166534;--line:#b7d3bd}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",Roboto,sans-serif}
+header{text-align:center;padding:12px 10px 4px}
+h1{margin:0;font-size:clamp(1.2rem,3.2vw,2rem);color:var(--g)}
+header p{margin:2px 0 0;font-size:.9rem;opacity:.75}
+.score{display:flex;justify-content:center;gap:14px;margin:8px auto;padding:0 10px}
+.sb{min-width:120px;padding:6px 18px;border-radius:14px;color:#fff;text-align:center;font-weight:700}
+.sb b{display:block;font-size:2rem;line-height:1.1}
+.sb.x{background:var(--x)}.sb.o{background:var(--o)}
+.stage{flex:1;display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;justify-items:center;padding:8px 12px;max-width:1200px;width:100%;margin:0 auto}
+.turn{width:min(100%,170px);aspect-ratio:1;border:4px solid transparent;border-radius:22px;font-size:clamp(3rem,9vw,5.5rem);font-weight:900;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.55;transition:.2s}
+.turn small{font-size:.9rem;font-weight:700}
+#bx{background:var(--x)}#bo{background:var(--o)}
+.turn.on{opacity:1;transform:scale(1.07);border-color:#fbbf24;box-shadow:0 0 0 5px #fde68a,0 8px 20px #0004}
+.wrap{position:relative;width:min(92vw,calc(100vh - 360px),640px);min-width:270px;aspect-ratio:1}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;width:100%;height:100%}
+.cell{container-type:size;position:relative;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--g);font-weight:800;font-size:clamp(1.2rem,5vw,2.4rem);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.cell:hover:not(:disabled){background:#f0fdf4;transform:scale(1.03)}
+.cell:disabled{cursor:default}
+.cell.x{background:var(--x);border-color:var(--x);color:#fff}.cell.o{background:var(--o);border-color:var(--o);color:#fff}
+.cell span{font-size:78cqmin;line-height:1;font-weight:900}
+.cell.bad{animation:sh .4s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+svg.win{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+svg.win line{stroke:#facc15;stroke-width:3.2;stroke-linecap:round;filter:drop-shadow(0 0 1.5px #000);stroke-dasharray:140;stroke-dashoffset:140;animation:dr .7s forwards}
+@keyframes dr{to{stroke-dashoffset:0}}
+.ov{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:10px;z-index:9}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:18px;width:min(720px,100%);max-height:94vh;overflow:auto;padding:16px 18px}
+.modal h2{margin:0 0 8px;font-size:1.05rem;color:var(--g)}
+.ref{background:#f1f8f2;border-left:5px solid var(--g);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.95rem;line-height:1.5}
+.ref b{color:var(--g)}
+.q{font-size:1.15rem;font-weight:700;margin:6px 0 10px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:1rem;cursor:pointer;color:var(--ink)}
+.opt:hover{background:#f0fdf4;border-color:var(--g)}
+.opt i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-style:normal;font-weight:700;display:grid;place-items:center}
+.pie{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.pie div.c{width:110px;height:110px;border-radius:50%;background:conic-gradient(#16a34a 0 40%,#f59e0b 40% 75%,#3b82f6 75% 90%,#9ca3af 90%)}
+.tools{display:flex;justify-content:center;gap:10px;padding:6px}
+.btn{border:0;border-radius:10px;padding:9px 18px;background:var(--g);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.btn.l{background:#e5e7eb;color:var(--ink)}
+.win-box{text-align:center}.win-box h2{font-size:2rem;margin:4px}
+#toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:#111;color:#fff;padding:9px 16px;border-radius:20px;opacity:0;transition:.3s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}
+footer{text-align:center;padding:10px;font-size:.9rem;font-weight:700;color:var(--g)}
+.ids{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.ids input{padding:7px 12px;border:2px solid var(--line);border-radius:10px;font:inherit;min-width:180px;background:#fff;color:var(--ink)}
+.tools{flex-wrap:wrap}.tools .btn{display:inline-block}
+.cell.dead{background:#d1d5db;border-color:#9ca3af;color:#6b7280}.cell.dead span{font-size:50cqmin}
+.tm{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tm .bar{flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}
+#tb{height:100%;width:100%;background:#16a34a;transition:width 1s linear}
+.tm b{font-size:1.4rem;min-width:36px;text-align:right}
+.info{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.info span{background:#fff;border:2px solid var(--line);padding:5px 14px;border-radius:20px;font-weight:700;color:var(--ink)}
+.start{text-align:center;color:#fff}.start h1{color:#fff;font-size:clamp(2.6rem,10vw,5.5rem);margin:0 0 8px}
+.start .info{margin-bottom:24px}
+.go{font-size:1.7rem;padding:16px 46px;background:#facc15;color:#10321f;border-radius:40px}
+#cd{min-height:1.1em;font-size:clamp(6rem,30vw,14rem);font-weight:900;line-height:1.1}
+#cd .n{display:inline-block;animation:pop .9s}
+@keyframes pop{from{transform:scale(1.7);opacity:0}to{transform:scale(1);opacity:1}}
+.player .cell,.player .turn{pointer-events:none}.player #reset,.player .tools{display:none}
+@media(max-width:720px){
+ .stage{grid-template-columns:1fr 1fr;grid-template-areas:"b b" "x o"}
+ .wrap{grid-area:b}#bx{grid-area:x;justify-self:end}#bo{grid-area:o;justify-self:start}
+ .turn{width:min(100%,120px);font-size:3rem}
+}
+</style></head><body>
+<header><h1>Tic Tac Toe</h1><p>Answer the quiz, claim a square, and connect four in a row to win!</p><div class="ids" id="ids"><input id="tn" placeholder="Nama Guru" aria-label="Nama Guru"><input id="sn" placeholder="Nama Sekolah" aria-label="Nama Sekolah"><input id="sj" placeholder="Mata Pelajaran" aria-label="Mata Pelajaran"><input id="mt" placeholder="Materi (mis. Unit/Bab ... - ...)" aria-label="Materi"></div></header>
+<div class="score"><div class="sb x">Tim X<b id="sx">0</b></div><div class="sb o">Tim O<b id="so">0</b></div></div>
+<div id="st" class="info" hidden=""></div><main class="stage">
+ <button class="turn" id="bx" aria-label="Giliran Tim X">X<small>Giliran Tim X</small></button>
+ <div class="wrap"><div class="board" id="board"></div><svg class="win" id="wl" viewBox="0 0 100 100"></svg></div>
+ <button class="turn" id="bo" aria-label="Giliran Tim O">O<small>Giliran Tim O</small></button>
+</main>
+<div class="tools"><button class="btn l" id="reset">🔄 Game Baru</button><button class="btn l" id="pb">🔗 2 Perangkat</button><button class="btn l" id="mu">🎵 Musik: On</button><button class="btn" id="dg">💾 Download Game</button><button class="btn l" id="dl">⬇ Download Template Excel</button><label class="btn l" for="up">⬆ Upload Soal</label><input type="file" id="up" accept=".csv,.txt" hidden=""></div>
+<div class="ov" id="qov"><div class="modal" id="qm"></div></div>
+<div class="ov" id="wov"><div class="modal win-box" id="wm"></div></div>
+<div id="toast"></div>
+<footer>Dibuat oleh: I Wayan Sudiana</footer>
+<script>window.OUTPUT=1;window.CFG={"bank":[["~Teori Debat","Apa yang dimaksud dengan 'mosi' dalam sebuah perdebatan?","Topik atau tema yang diperdebatkan oleh kedua belah pihak","Argumen yang disampaikan oleh pembicara pertama","Interupsi yang diberikan oleh tim lawan","Keputusan akhir yang dikeluarkan oleh dewan juri","Aturan waktu yang ditentukan oleh panitia"],["~Teori Debat","Tim yang bertugas mendukung atau menyetujui mosi dalam LDBI disebut...","Tim Afirmatif (Pro)","Tim Negatif (Kontra)","Tim Oposisi","Tim Netral","Dewan Juri"],["~Teori Debat","Apa tugas utama dari seorang pembawa acara atau Moderator dalam debat?","Memimpin jalannya debat dan memastikan kepatuhan terhadap tata tertib","Memberikan nilai kepada masing-masing pembicara","Membantu menyusun argumen untuk tim yang kesulitan","Menentukan tim mana yang menjadi pemenang","Menyampaikan sanggahan terhadap mosi"],["~Teori Debat","Orang yang bertugas menghitung dan memberikan tanda waktu jalannya debat disebut...","Timekeeper","Chairperson","Adjudicator","Moderator","Runner"],["~Teori Debat","Istilah 'Adjudicator' dalam perlombaan LDBI merujuk kepada...","Dewan Juri yang menilai jalannya perdebatan","Peserta debat dari tim afirmatif","Penonton yang memberikan dukungan","Panitia yang mengatur ruangan debat","Pembicara yang menyampaikan kesimpulan"],["~Parlemen Asia","Sistem debat Parlemen Asia (Asian Parliamentary) terdiri dari dua tim, yaitu...","Government (Pemerintah) dan Opposition (Oposisi)","Afirmatif dan Pro-kontra","Prime Minister dan Deputy Prime Minister","House of Lords dan House of Commons","Suku dan Komunitas"],["~Parlemen Asia","Berapa jumlah pembicara utama dalam satu tim pada sistem Parlemen Asia?","3 orang","2 orang","4 orang","5 orang","1 orang"],["~Parlemen Asia","Dalam sistem Parlemen Asia, pidato penutup yang bertujuan memberikan ringkasan perdebatan disebut...","Reply Speech (Pidato Balasan)","Substantive Speech","Point of Information","Rebuttal Speech","Extension Speech"],["~Parlemen Asia","Siapa yang berhak menyampaikan 'Reply Speech' dalam format Parlemen Asia?","Pembicara 1 atau Pembicara 2 dari masing-masing tim","Hanya Pembicara 3 dari masing-masing tim","Moderator atau perwakilan dari Dewan Juri","Semua anggota tim secara bersama-sama","Pembicara cadangan yang tidak tampil sebelumnya"],["~Parlemen Asia","Berapa waktu standar yang biasanya diberikan untuk pembicara utama dalam LDBI (sistem Parlemen Asia)?","7 menit 20 detik","5 menit 00 detik","8 menit 00 detik","10 menit 00 detik","6 menit 20 detik"],["~Parlemen Asia","Berapakah waktu standar untuk menyampaikan Pidato Balasan (Reply Speech) dalam LDBI?","4 menit 20 detik","7 menit 20 detik","5 menit 00 detik","3 menit 00 detik","6 menit 00 detik"],["~Parlemen Asia","Urutan pembicara yang benar dalam format Parlemen Asia setelah Pembicara 1 Afirmatif adalah...","Pembicara 1 Oposisi","Pembicara 2 Afirmatif","Pembicara 2 Oposisi","Pembicara 3 Afirmatif","Pembicara Balasan Afirmatif"],["~Parlemen Asia","Tim mana yang maju terlebih dahulu untuk menyampaikan Pidato Balasan (Reply Speech)?","Tim Oposisi","Tim Afirmatif","Ditentukan secara acak oleh koin","Tim yang memiliki nilai lebih tinggi","Maju secara bersamaan"],["~Parlemen Asia","Apa perbedaan utama antara pidato substantive pembicara 1-3 dengan pidato balasan?","Pidato balasan tidak boleh membawa argumen baru","Pidato balasan memiliki waktu yang lebih lama","Pidato balasan diperbolehkan menerima POI","Pidato balasan hanya dibacakan oleh pembicara ke-3","Pidato balasan tidak dinilai oleh dewan juri"],["~Parlemen Asia","Istilah 'Case Building' dalam LDBI merujuk pada proses...","Waktu persiapan tim untuk menyusun argumen sebelum debat dimulai","Proses juri dalam menentukan pemenang debat","Penyampaian interupsi di tengah pidato lawan","Pemilihan mosi secara acak oleh panitia","Pelatihan debat yang diadakan sebelum kompetisi"],["~Tugas Anggota Tim","Apa tugas utama dari Pembicara 1 Tim Afirmatif (Prime Minister)?","Memberikan definisi mosi, batasan, dan garis besar argumen tim","Menyampaikan sanggahan penuh terhadap argumen tim oposisi","Memberikan argumen baru yang paling mendalam di akhir debat","Membuat perbandingan komprehensif antara kedua tim","Menginterupsi semua penjelasan dari pihak lawan"],["~Tugas Anggota Tim","Salah satu tugas krusial dari Pembicara 1 Tim Oposisi (Leader of Opposition) adalah...","Merespons definisi dari tim afirmatif (menerima atau menolak dengan syarat)","Menyampaikan pidato balasan secara langsung","Melarang tim afirmatif memberikan Point of Information","Mengganti mosi debat secara sepihak tanpa alasan","Menyimpulkan seluruh jalannya perdebatan"],["~Tugas Anggota Tim","Apa peran utama dari Pembicara 2 (baik Afirmatif maupun Oposisi)?","Memperdalam argumen tim dan menyanggah argumen lawan sebelumnya","Membuat definisi baru dan mengubah parameter perdebatan","Fokus hanya pada pembacaan kesimpulan akhir perdebatan","Memberikan Point of Information sebanyak mungkin kepada lawan","Menggantikan posisi pembicara 1 yang lupa teks"],["~Tugas Anggota Tim","Pembicara keberapa yang dilarang keras membawa argumen baru (new matter) dalam perdebatan?","Pembicara 3 dan Pembicara Balasan","Hanya Pembicara 1 Afirmatif","Pembicara 2 Afirmatif dan Oposisi","Hanya Pembicara 1 Oposisi","Semua pembicara bebas membawa argumen baru"],["~Tugas Anggota Tim","Apa fokus utama dari tugas Pembicara 3 dalam perlombaan LDBI?","Melakukan sanggahan total dan memetakan bentrokan argumen (clashes)","Mendefinisikan mosi dari sudut pandang yang berbeda","Membawa 3 argumen substantive baru bagi tim","Menentukan pemenang perdebatan secara sepihak","Mengatur waktu penampilan anggota tim lainnya"],["~Tugas Anggota Tim","Jika Pembicara 1 Afirmatif memberikan definisi yang terlalu sempit atau aneh (truism), apa yang bisa dilakukan Pembicara 1 Oposisi?","Melakukan tantangan definisi (Definitional Challenge) dengan alasan yang logis","Langsung menghentikan perdebatan dan meminta juri mendiskualifikasi lawan","Menerima saja tanpa boleh memberikan kritik atau sanggahan","Keluar dari ruangan debat sebagai bentuk protes","Meminta penonton untuk melakukan voting ulang mosi"],["~Tugas Anggota Tim","Dalam pidato balasan (reply speech), pembicara harus memosisikan dirinya sebagai...","Seorang juri yang objektif (biased adjudicator) untuk menunjukkan keunggulan timnya","Pembicara baru yang membawa solusi alternatif di luar mosi","Pihak netral yang memuji penampilan tim lawan","Saksi mata yang membacakan notulensi jalannya perdebatan","Orang yang meminta maaf atas kesalahan argumen timnya"],["~Tugas Anggota Tim","Berapa durasi waktu persiapan (Case Building) yang umum diberikan pada kompetisi LDBI?","30 menit","15 menit","60 menit","5 menit","45 menit"],["~Tugas Anggota Tim","Selama sesi Case Building, peserta dilarang melakukan hal berikut, yaitu...","Menggunakan gawai atau berselancar di internet untuk mencari materi","Berdiskusi dengan sesama anggota tim yang satu ruangan","Menggunakan kamus cetak atau buku panduan tertulis","Menulis poin-poin argumen di lembar kertas","Memikirkan strategi pembagian pembicara"],["~Tugas Anggota Tim","Siapakah yang bertugas membawa 'Stance' atau arah kebijakan tim pertama kali?","Pembicara 1","Pembicara 2","Pembicara 3","Pembicara Balasan","Adjudicator"],["~Teknik AREL","Dalam teknik menyusun argumen AREL, huruf 'A' merupakan singkatan dari...","Assertion (Pernyataan/Klaim)","Argumentation (Argumentasi)","Analysis (Analisis)","Action (Tindakan)","Agreement (Persetujuan)"],["~Teknik AREL","Bagian dari AREL yang menjelaskan alasan logis mengapa pernyataan/klaim tim benar adalah...","Reasoning","Assertion","Evidence","Linkback","Rebuttal"],["~Teknik AREL","Huruf 'E' dalam teknik AREL merujuk pada 'Evidence'. Apa wujud dari Evidence tersebut?","Data, fakta, statistik, studi kasus, atau contoh konkret","Opini pribadi dari pembicara tanpa dasar hukum","Pernyataan setuju dari tim oposisi","Sanggahan langsung terhadap pembicara sebelumnya","Kesimpulan akhir dari mosi perdebatan"],["~Teknik AREL","Apa tujuan utama dari komponen 'Linkback' dalam metode AREL?","Menghubungkan kembali argumen yang dijabarkan dengan mosi debat","Membuka kesempatan bagi lawan untuk memberikan interupsi","Mencari data baru di internet saat sedang berpidato","Menyimpulkan pidato pembicara ketiga secara ringkas","Meminta juri untuk segera memberikan penilaian"],["~Teknik AREL","Mengapa 'Reasoning' (analisis logika) dianggap sebagai jantung dari sebuah argumen debat?","Karena menjelaskan proses sebab-akibat yang rasional dari klaim yang dibawa","Karena hanya berisi angka statistik yang sulit dibantah oleh lawan","Karena tidak bisa disanggah sama sekali oleh pembicara ketiga lawan","Karena ditulis langsung oleh pelatih sebelum perdebatan dimulai","Karena berisi kata-kata puitis yang menarik perhatian penonton"],["~Teknik AREL","Argumen yang tidak dilengkapi dengan 'Evidence' dan 'Reasoning' yang kuat sering disebut...","Argumen yang mengambang atau asertif (bare assertion)","Argumen komprehensif","Argumen substantif","Argumen mutlak","Sanggahan taktis"],["~Teknik AREL","Di bagian mana dalam struktur AREL pembicara membuktikan dampak nyata (impact) dari argumennya?","Reasoning dan Evidence","Assertion saja","Linkback saja","Saat menjawab Point of Information","Di menit pertama pidato dimulai"],["~Teknik AREL","Ketika menyusun argumen, apa yang harus dipastikan oleh pembicara agar argumennya 'relavan'?","Argumen harus konsisten menjawab beban pembuktian (burden of proof) mosi","Argumen harus menggunakan istilah asing sebanyak mungkin","Argumen harus menyerang kepribadian dari pembicara pihak lawan","Argumen harus disetujui secara mutlak oleh timekeeper","Argumen harus sepanjang mungkin hingga melewati batas waktu resmi"],["~POI & Aturan","Apa kepanjangan dari istilah POI dalam dunia debat parlementer?","Point of Information","Point of Interest","Point of Interruption","Point of Instruction","Point of Opinion"],["~POI & Aturan","Kapan POI (Point of Information) boleh diberikan kepada pembicara yang sedang berpidato?","Antara menit ke-1 hingga menit ke-6 pidato substantive","Sejak detik pertama pidato dimulai hingga pidato berakhir","Hanya pada saat pidato balasan (reply speech) berlangsung","Kapan saja pembicara lawan terlihat lupa teks argumennya","Hanya setelah ketukan penanda waktu habis berbunyi"],["~POI & Aturan","Bagaimana cara yang sopan dan sesuai aturan untuk mengajukan POI dalam LDBI?","Berdiri tenang sambil mengangkat tangan atau berkata 'Interupsi/POI, Pembicara'","Langsung berteriak memotong pembicaraan dengan suara sangat keras","Memukul meja berkali-kali untuk menarik perhatian pembicara","Berjalan mendekati podium pembicara lawan yang sedang berpidato","Menuliskan interupsi di kertas lalu melemparkannya ke lawan"],["~POI & Aturan","Berapa durasi maksimal yang diberikan untuk menyampaikan satu POI?","15 detik","30 detik","60 detik","5 detik","45 detik"],["~POI & Aturan","Apakah pembicara yang sedang berpidato wajib menerima semua POI yang diajukan lawan?","Tidak, pembicara memiliki hak penuh untuk menerima atau menolak POI","Ya, wajib menerima demi asas keadilan perdebatan LDBI","Ya, minimal harus menerima 5 interupsi dalam satu pidato","Wajib menerima jika diminta langsung oleh Dewan Juri","Tidak boleh menerima sama sekali karena akan mengurangi nilai"],["~POI & Aturan","Apa akibatnya jika sebuah tim sama sekali tidak pernah menawarkan POI sepanjang debat berlangsung?","Dapat mengurangi nilai responsivitas dan keaktifan tim di mata juri","Tim tersebut akan langsung didiskualifikasi dari perlombaan","Waktu pidato tim tersebut akan dipotong secara otomatis","Tim lawan akan diberikan poin gratis sebanyak 10 poin","Tidak berakibat apa-apa karena mengajukan POI dilarang"],["~POI & Aturan","Apa istilah untuk tindakan menyanggah poin argumen lawan secara langsung pada awal pidato?","Rebuttal (Sanggahan)","Stance (Sikap)","Burden of Proof (Beban Pembuktian)","Clash (Bentrokan)","Definition (Definisi)"]],"info":{"t":"I Wayan Sudiana","s":"SMAN 2 Bangli","j":"Ekstra Debat","m":"Teori Dasar Debat"}};
+const REF={
+D:`<b>Dialogue: "Our Neighborhood's Waste Problem"</b><br><b>Dewi:</b> Have you noticed how much trash piles up near the river these days?<br><b>Made:</b> Yes, it's mostly non-biodegradable waste like plastic bags and packaging.<br><b>Dewi:</b> That's a real pollution problem. What if we started composting the organic waste at home?<br><b>Made:</b> That's a great idea! It would reduce what goes to the landfill.<br><b>Dewi:</b> We could also set up a small recycling station for the neighborhood.`,
+T:`<b>Descriptive Text: "Tukad Bindu, A Hidden Green Spot"</b><br>Tukad Bindu is a small riverside park that used to be filled with domestic waste. Today, it is spotless and full of life. The clear water reflects the green bamboo trees along the bank, while the gentle sound of the flowing river creates a calming atmosphere. Visitors can smell the fresh scent of grass after the morning rain and feel the cool breeze as they walk along the wooden path. Thanks to the local community's clean-up movement, this once-polluted riverside has become one of the city's favorite green spots.`,
+I:`<b>Infographic: "Where Does Our Household Waste Go?"</b><div class="pie"><div class="c"></div><div>🟩 Organic waste: 40%<br>🟧 Plastic: 35%<br>🟦 Paper: 15%<br>⬜ Others: 10%</div></div>Green bin (organic) and yellow bin (non-biodegradable) icons appear at the bottom, with arrows leading to a composting place and a waste bank.<br><i>"Small actions, big impact for our neighborhood."</i>`,
+P:`<b>Paragraph:</b> Green Corner Park is a peaceful and spotless place near my school. The bright green grass covers the entire field, and colorful flowers bloom along the pathway. Visitors can hear birds chirping softly in the trees and feel a cool breeze in the afternoon. The air smells fresh, especially after the morning rain.`};
+// [ref, question, CORRECT, wrong1..wrong4]  (options are shuffled at runtime)
+let BANK=[
+["D","What problem do Dewi and Made mainly discuss?","Plastic waste piling up near the river in their area","Air pollution caused by vehicles on the main road","A shortage of clean water in their own houses","Noise coming from a nearby construction site","Flooding after a long period of heavy rain"],
+["D","According to Made, what kind of waste is mostly found near the river?","Non-biodegradable waste such as plastic bags","Organic waste such as leaves and fruit peels","Hazardous waste such as used batteries and oil","Construction waste such as bricks and cement","Electronic waste such as broken phones and radios"],
+["D","What solution does Dewi suggest first?","Composting the organic waste at home","Banning plastic bags in all local shops","Cleaning the river every single week","Building a new landfill outside the village","Asking neighbors to stop buying packaged food"],
+["D","Which sentence from the dialogue offers a solution?","We could also set up a small recycling station for the neighborhood.","Have you noticed how much trash piles up near the river these days?","Yes, it's mostly non-biodegradable waste like plastic bags and packaging.","That's a real pollution problem, and it is getting worse.","Most of the trash near the river comes from plastic packaging."],
+["","Which term means 'a place where waste is finally dumped'?","landfill","compost","pollution","recycle","organic waste"],
+["","What does 'compost' mean?","Natural fertilizer made from decomposed organic waste","A container used to separate different kinds of trash","A factory that turns old plastic into new products","A harmful substance that pollutes the air and water","A place where all household waste is finally dumped"],
+["","Which of the following is an example of organic waste?","Banana peels left over from the kitchen","Plastic bottles used for mineral water","Aluminum cans from soft drinks","Styrofoam boxes for take-away food","Plastic bags from a supermarket"],
+["","What does 'recycle' mean?","To process used materials into new products","To throw used materials into a landfill","To bury waste deep under the ground","To collect rainwater for daily needs","To burn rubbish in an open space"],
+["","Which sentence explains a CAUSE of the waste problem?","Most of it comes from food packaging and plastic bags.","Our neighborhood has a serious waste problem.","We should start separating organic and non-biodegradable waste.","Composting can really help to reduce the trash.","The amount of household waste keeps increasing."],
+["","Which expression is used to offer a solution?","We should start separating organic and non-biodegradable waste.","Our neighborhood has a serious waste problem.","Most of it comes from food packaging and plastic bags.","The amount of household waste keeps increasing.","It is a real pollution problem for the river."],
+["","What is an adjective phrase?","A group of words that describes a noun, often an adverb plus an adjective","A group of words that shows an action done by the subject","A single word that connects two clauses in one sentence","A sentence that gives an order or a strong request","A group of words that replaces a noun in a sentence"],
+["","Which one is an adjective phrase?","extremely polluted","river near the market","cleans the park","in the morning","the public bin"],
+["","Complete the sentence: 'After the clean-up, the park looked ___ spotless.'","completely","loudly","slowly","early","gently"],
+["","What does 'overflowing' mean in 'The public bin is dangerously overflowing with trash'?","The bin is so full that trash spills out","The bin is completely empty and clean","The bin is broken and cannot be used","The bin is moved to another place","The bin is painted in bright colors"],
+["","Which sentence uses the simple present tense to describe a place?","The river near the market is extremely polluted.","The river near the market was extremely polluted.","The river near the market will be extremely polluted.","The river near the market had extremely polluted.","The river near the market is being extremely polluted."],
+["T","What is the main idea of the text?","Tukad Bindu has changed from a dirty place into a clean green spot","Tukad Bindu is a famous shopping center in the city","Visitors are forbidden to walk along the river bank","The river still contains a lot of domestic waste today","Bamboo trees were brought in from another island"],
+["T","Which sentence is the topic sentence of the text?","Tukad Bindu is a small riverside park that used to be filled with domestic waste.","The gentle sound of the flowing river creates a calming atmosphere.","Visitors can smell the fresh scent of grass after the morning rain.","The clear water reflects the green bamboo trees along the bank.","Visitors can feel the cool breeze as they walk along the wooden path."],
+["T","Which sense does 'the gentle sound of the flowing river' appeal to?","Hearing","Sight","Smell","Touch","Taste"],
+["T","What is the main purpose of the text?","To describe the sights, sounds, smells, and feel of a place","To order readers to stop using plastic bags at home","To report statistics about the city's waste production","To tell a fictional story about a river spirit","To explain the steps for making compost"],
+["T","What does 'once-polluted' suggest about the riverside?","It was polluted in the past but is clean now","It is still polluted and getting worse","It has never been polluted before","It will become polluted in the future","It is polluted only in the rainy season"],
+["T","Who helped change Tukad Bindu into a green spot?","The local community through a clean-up movement","A foreign company that built a factory nearby","The tourists who visited during the holidays","A group of scientists studying river animals","The school that organized a cooking contest"],
+["I","Which type of waste makes up the largest part of household waste?","Organic waste","Plastic waste","Paper waste","Other waste","All types are equal in amount"],
+["I","What percentage of household waste is plastic?","35%","40%","15%","10%","25%"],
+["I","Where do the arrows from the green and yellow bins lead?","To a composting place and a waste bank","To a landfill and an incinerator","To a factory and a shopping mall","To a river and a beach","To a school and a hospital"],
+["I","Which sentence is DETAILED information rather than core information?","Organic waste is 40%, higher than plastic (35%) and paper (15%).","Most household waste is organic waste.","Sorting waste can reduce the burden on landfills.","Small actions can make a big impact.","Households should manage their waste wisely."],
+["I","What message is written in the corner of the infographic?","Small actions, big impact for our neighborhood.","Reduce, reuse, and recycle every single day.","Clean water is a right for every citizen.","Save the earth before it is too late.","Keep our city green and beautiful."],
+["P","Which sentence appeals to the sense of sight?","The bright green grass covers the entire field.","Visitors can hear birds chirping softly in the trees.","Visitors feel a cool breeze in the afternoon.","The air smells fresh, especially after the morning rain.","Children can hear laughter around the wooden playground."],
+["P","The first sentence of the paragraph belongs to which part of a descriptive text?","Identification","Description","Complication","Resolution","Evaluation"],
+["","What is the function of the Description part in a descriptive text?","To detail the features of a place using sensory words","To introduce the place in a general way","To tell the sequence of events in the past","To persuade readers to donate money","To explain the causes of an event"],
+["","Which phrase belongs to the sense of touch?","soft grass underfoot","chirping birds","sparkling water","fresh scent of grass","colorful flowers"],
+["","What should the opening of a poster presentation contain?","A short greeting and the name of the chosen Green Spot","A long list of all the group members' hobbies","A detailed explanation of the grading rubric","A request for classmates to leave the room","A summary of the poster's design mistakes"],
+["","What should the closing of a poster presentation contain?","An invitation to protect or visit the place and thanks","A new topic that has nothing to do with the poster","A long apology for mistakes on the poster","A list of difficult questions for the teacher","A retelling of the ice-breaking activity"],
+["","What feedback should visitors give during the gallery walk?","At least one positive comment and one suggestion","Only positive comments without any suggestion","Only criticism about the poster's flaws","A score without any written comment","A comparison of which group is the best"]
+];
+const LINES=[];for(let i=0;i<4;i++){LINES.push([0,1,2,3].map(c=>i*4+c),[0,1,2,3].map(r=>r*4+i))}
+LINES.push([0,5,10,15],[3,6,9,12]);
+const $=id=>document.getElementById(id),L='ABCDE';
+const SKEL=document.body.innerHTML.replace(/<script[\s\S]*$/,''),OUT=!!window.OUTPUT;
+let pool,own,turn,score,cur,busy,done,ac,dlShown=false;
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=t=>String(t).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+function A(){ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}
+function tone(f,t0,d,type,vol,f2){try{const c=A(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+ g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+d+.03)}catch(e){}}
+function sfx(t){try{const n=A().currentTime;
+ if(t==='X'){[1319,1568,1976,2349,2637].forEach((f,i)=>{tone(f,n+i*.07,.35,'triangle',.18);tone(f*2,n+i*.07,.2,'sine',.05)})}
+ else{tone(180,n,.7,'sawtooth',.14,1100);tone(270,n+.04,.7,'square',.06,1650);tone(1100,n+.7,.3,'sine',.12,1500)}}catch(e){}}
+function buzz(){try{const n=A().currentTime;tone(220,n,.35,'sawtooth',.22,110);tone(160,n+.22,.5,'sawtooth',.22,70)}catch(e){}}
+function bell(){try{const n=A().currentTime;[0,1.5].forEach(d=>{tone(988,n+d,.8,'sine',.3);tone(1976,n+d,.5,'sine',.08);tone(740,n+d+.5,1,'sine',.3);tone(1480,n+d+.5,.6,'sine',.08)})}catch(e){}}
+let mOn=true,mT=null,mi=0,tI,tL=30;
+const MEL=[523,659,784,659,880,784,659,587,659,523,587,392,523,784,880,784];
+function music(){if(mT||!mOn)return;mT=setInterval(()=>{try{const t=A().currentTime+.03,f=MEL[mi%MEL.length];tone(f,t,.5,'sine',.06);if(mi%4===0)tone(f/2,t,1,'triangle',.04);mi++}catch(e){}},340)}
+function startTimer(){tL=30;tick();clearInterval(tI);tI=setInterval(()=>{tL--;tick();if(tL<=0)answer(0,true)},1000)}
+function stopTimer(){clearInterval(tI)}
+function tick(){const b=$('tb');if(!b)return;b.style.width=(tL/30*100)+'%';$('tt').textContent=tL;b.style.background=tL<=10?'#dc2626':'#16a34a'}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800)}
+function init(){stopTimer();dlShown=false;pool=shuf(BANK.slice());own=Array(16).fill(null);turn='X';score={X:0,O:0};cur=null;done=new Set();
+ $('board').innerHTML='';for(let i=0;i<16;i++){const b=document.createElement('button');b.className='cell';b.textContent=i+1;b.onclick=()=>openQ(i);$('board').appendChild(b)}
+ $('wl').innerHTML='';upd();['qov','wov'].forEach(x=>$(x).classList.remove('show'))}
+function upd(){$('sx').textContent=score.X;$('so').textContent=score.O;$('bx').classList.toggle('on',turn==='X');$('bo').classList.toggle('on',turn==='O')}
+function openQ(i){if(own[i])return;
+ if(!turn){toast('Pilih giliran dulu: tombol X atau O');return}
+ if(!pool.length){toast('Bank soal habis. Klik Game Baru.');return}
+ const q=pool.pop(),opts=shuf(q.slice(2).map((t,k)=>({t,ok:k===0})));cur={i,q,opts};
+ $('qm').innerHTML=`<h2>Kotak ${i+1} · Giliran Tim ${turn}</h2><div class="tm"><div class="bar"><div id="tb"></div></div><b id="tt">30</b></div>${q[0]?`<div class="ref">${REF[q[0]]||esc(q[0].slice(1))}</div>`:''}<div class="q">${esc(q[1])}</div>`+
+ opts.map((o,k)=>`<button class="opt" data-k="${k}"><i>${L[k]}</i><span>${esc(o.t)}</span></button>`).join('')+`<div style="text-align:right"><button class="btn l" id="cx">Batal</button></div>`;
+ $('qm').querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+ $('cx').onclick=()=>{stopTimer();pool.unshift(cur.q);cur=null;pub();$('qov').classList.remove('show')};
+ $('qov').classList.add('show');startTimer()}
+function answer(k,timeout){if(!cur)return;stopTimer();const {i,opts}=cur,ok=!timeout&&opts[k].ok,t=turn;cur=null;
+ $('qov').classList.remove('show');const cell=$('board').children[i];
+ if(ok){cell.disabled=true;own[i]=t;score[t]+=10;cell.classList.add(t.toLowerCase());cell.innerHTML=`<span>${t}</span>`;sfx(t);check(t)}
+ else{cell.classList.add('bad');setTimeout(()=>cell.classList.remove('bad'),450);timeout?bell():buzz();toast((timeout?'Waktu habis! ':'Jawaban salah. ')+'Kotak ditutup kembali dengan soal baru.')}
+ turn=t==='X'?'O':'X';upd();
+ if(own.every(Boolean)||!pool.length)setTimeout(()=>{if(!$('wov').classList.contains('show'))end()},1000);else if(ok)setTimeout(checkDead,1000)}
+function check(t){LINES.forEach((ln,n)=>{if(!done.has(n)&&ln.every(c=>own[c]===t)){done.add(n);
+ const p=c=>[(c%4+.5)*25,(Math.floor(c/4)+.5)*25],a=p(ln[0]),b=p(ln[3]);
+ $('wl').insertAdjacentHTML('beforeend',`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`);
+ setTimeout(()=>{$('wm').innerHTML=`<div style="font-size:3rem">🎉</div><h2 style="color:var(--${t.toLowerCase()})">Tim ${t} Menang!</h2><p>Berhasil membentuk garis 4 kotak.<br>Skor — X: ${score.X} | O: ${score.O}</p><button class="btn" id="c1">Lanjutkan</button> <button class="btn l" id="c2">Game Baru</button>`;
+ $('c1').onclick=()=>$('wov').classList.remove('show');$('c2').onclick=init;$('wov').classList.add('show')},900)}})}
+function canWin(t){return LINES.some(l=>l.every(c=>!own[c]||own[c]===t))}
+function checkDead(){if(dlShown||own.every(Boolean)||done.size||$('wov').classList.contains('show'))return;
+ if(canWin('X')||canWin('O'))return;dlShown=true;
+ $('wm').innerHTML=`<div style="font-size:3rem">⚠️</div><h2>Deadlock!</h2><p>Tidak ada lagi garis 4 kotak yang mungkin dibentuk oleh Tim X maupun Tim O.<br>Skor — X: ${score.X} | O: ${score.O}</p><button class="btn" id="d1">Akhiri &amp; lihat hasil</button> <button class="btn l" id="d2">Lanjutkan (hanya kejar skor)</button>`;
+ $('d1').onclick=end;$('d2').onclick=()=>$('wov').classList.remove('show');$('wov').classList.add('show')}
+function end(){const w=score.X===score.O?'Seri!':score.X>score.O?'Tim X unggul!':'Tim O unggul!';
+ $('wm').innerHTML=`<div style="font-size:3rem">🏁</div><h2>Permainan Selesai</h2><p>${w}<br>Skor — X: ${score.X} | O: ${score.O}</p><button class="btn" id="c2">Game Baru</button>`;
+ $('c2').onclick=init;$('wov').classList.add('show')}
+$('bx').onclick=()=>{turn='X';upd()};$('bo').onclick=()=>{turn='O';upd()};$('reset').onclick=init;
+const HEAD=['Reference (optional)','Question','Correct Answer','Wrong Option 1','Wrong Option 2','Wrong Option 3','Wrong Option 4'];
+const cc=t=>'"'+String(t).replace(/"/g,'""')+'"';
+$('dl').onclick=()=>{const rows=[HEAD].concat(BANK.slice(0,3).map(q=>[q[0]&&REF[q[0]]?REF[q[0]].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim():'',...q.slice(1)]));
+ const csv='\ufeff'+rows.map(r=>r.map(cc).join(',')).join('\r\n');const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='Template_Soal_TicTacToe.csv';a.click();toast('Template diunduh. Buka di Excel, isi soal, simpan sebagai CSV.')};
+function parseCSV(s){s=s.replace(/^\ufeff/,'');const l=s.split(/\r?\n/)[0],d=l.includes('\t')?'\t':((l.match(/;/g)||[]).length>(l.match(/,/g)||[]).length?';':',');
+ const rows=[];let r=[],c='',q=false;
+ for(let i=0;i<s.length;i++){const ch=s[i];
+  if(q){if(ch==='"'){if(s[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}
+  else if(ch==='"')q=true;else if(ch===d){r.push(c);c=''}
+  else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&s[i+1]==='\n')i++;r.push(c);c='';rows.push(r);r=[]}else c+=ch}
+ if(c||r.length){r.push(c);rows.push(r)}return rows}
+$('up').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+ rd.onload=()=>{const rows=parseCSV(rd.result).slice(1).map(r=>r.map(x=>(x||'').trim())).filter(r=>r.length>=7&&r[1]&&r.slice(2,7).every(Boolean));
+  if(rows.length<16){toast('Minimal 16 soal lengkap (7 kolom) diperlukan.');return}
+  BANK=rows.map(r=>[r[0]?'~'+r[0]:'',...r.slice(1,7)]);init();toast(rows.length+' soal dimuat. Game dimulai ulang.')};
+ rd.readAsText(f);e.target.value=''};
+$('mu').onclick=()=>{mOn=!mOn;if(mOn)music();else{clearInterval(mT);mT=null}$('mu').textContent='🎵 Musik: '+(mOn?'On':'Off')};
+document.addEventListener('pointerdown',()=>{if(mOn)music()});
+$('dg').onclick=()=>{const v=id=>$(id).value.trim(),cfg={bank:BANK,info:{t:v('tn'),s:v('sn'),j:v('sj'),m:v('mt')}};
+ const html='<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tic Tac Toe - '+esc(cfg.info.m||'Quiz Game')+'</title><style>'+$('gcss').textContent+'</style></head><body>'+SKEL+'<script>window.OUTPUT=1;window.CFG='+JSON.stringify(cfg).replace(/</g,'\\u003c')+';'+$('gjs').textContent+'</scr'+'ipt></body></html>';
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
+ a.download='TicTacToe_'+(cfg.info.m||'Game').replace(/[^\w\-]+/g,'_')+'.html';a.click();toast('Game diunduh (tanpa placeholder, template, dan upload).')};
+if(OUT){BANK=CFG.bank;const I=CFG.info,p=[];
+ if(I.t)p.push('Guru: '+I.t);if(I.s)p.push('Sekolah: '+I.s);if(I.j)p.push('Mapel: '+I.j);if(I.m)p.push('Materi: '+I.m);
+ const chips=p.map(x=>`<span>${esc(x)}</span>`).join('');
+ $('ids').className='info';$('ids').innerHTML=chips;
+ ['dg','dl','up'].forEach(x=>$(x).remove());document.querySelector('label[for=up]').remove();
+ const o=document.createElement('div');o.className='ov show';o.id='sov';o.style.cssText='background:linear-gradient(135deg,#14532d,#166534);z-index:30';
+ o.innerHTML=`<div class="start"><h1>Tic Tac Toe</h1><div class="info">${chips}</div><button class="btn go" id="go">▶ Main / Play</button><div id="cd"></div></div>`;
+ document.body.appendChild(o);
+ $('go').onclick=()=>{$('go').style.display='none';music();let n=5;
+  const step=()=>{const c=$('cd');if(n>0){c.innerHTML=`<span class="n">${n}</span>`;tone(n>1?660:880,A().currentTime,.25,'sine',.3);n--;setTimeout(step,1000)}
+   else{c.innerHTML='<span class="n">GO!</span>';sfx('X');setTimeout(()=>o.remove(),700)}};step()}}
+let R=null,role='',myTeam='',seq=0,lastKey='',lastB='',curK='',chs=[],PP={},hostPres={},myPres={},cbs=[],pend=0,ap=false,slots=[],lanStream=null;
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+{const _u=upd;upd=function(){_u();pub()};const _o=openQ;openQ=function(i){_o(i);pub()};const _a=answer;answer=function(k,t){_a(k,t);pub()}}
+const fire=()=>cbs.forEach(f=>f()),mrg=(o,p)=>{for(const k in p){if(p[k]===null)delete o[k];else o[k]=p[k]}};
+function enc(d,full){
+ if(full)return 'F'+btoa(unescape(encodeURIComponent(JSON.stringify({t:d.type,s:d.sdp}))));
+ const g=r=>(d.sdp.match(r)||[])[1]||'',u=g(/a=ice-ufrag:(\S+)/),p=g(/a=ice-pwd:(\S+)/),f=g(/a=fingerprint:sha-256 (\S+)/);
+ const fp=btoa(f.split(':').map(h=>String.fromCharCode(parseInt(h,16))).join(''));
+ const cs=[...d.sdp.matchAll(/a=candidate:\S+ \d+ udp \d+ (\S+) (\d+) typ (\w+)/gi)].map(m=>[m[1],m[2],m[3]==='srflx'?'s':m[3]==='relay'?'r':'h']);
+ const k6=c=>(c[0].includes(':')?10:0)+'srh'.indexOf(c[2]);cs.sort((a,b)=>k6(a)-k6(b));
+ return (d.type==='offer'?'O':'A')+'|'+[u,p,fp,cs.slice(0,5).map(c=>c.join(',')).join(';')].join('|')}
+function ext(raw){raw=String(raw);const i=raw.indexOf('FeyJ');
+ if(i>=0){const m=raw.slice(i).replace(/\s+/g,'').match(/^F(eyJ[A-Za-z0-9+\/=]+)/);if(m)return 'F'+m[1]}
+ const m=raw.match(/[OA]\|[^\s|]+\|[^\s|]+\|[^\s|]+\|?[^\s|]*/);return m?m[0]:''}
+const ADV='Belum tersambung setelah 20 detik. Penyebab umum: kedua perangkat berada di jaringan berbeda (mis. data seluler) atau Wi-Fi memblokir koneksi langsung. Hubungkan kedua perangkat ke Wi-Fi/hotspot yang sama, lalu buat kode baru dengan tombol ＋ Tambah perangkat.',ADV2='Belum tersambung. Pastikan guru sudah menempelkan kode jawaban ini dan menekan Sambungkan. Jika sudah, kemungkinan jaringan memblokir koneksi langsung: coba satu Wi-Fi/hotspot yang sama.';
+const NOTE='Catatan: browser menyembunyikan alamat Wi-Fi lokal (nama .local). Jika di Wi-Fi yang sama tidak tersambung, aktifkan "mode jaringan lokal" di menu 2 Perangkat pada kedua perangkat, lalu buat kode baru.';
+async function lan(){if(lanStream){toast('Mode jaringan lokal sudah aktif');return}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){toast('Browser/halaman ini tidak mendukung izin mikrofon (perlu https atau file lokal)');return}
+ try{lanStream=await navigator.mediaDevices.getUserMedia({audio:true});const b=$('m5');if(b)b.textContent='✓ Mode jaringan lokal aktif';toast('Aktif. Sekarang buat kode baru.')}catch(e){toast('Izin mikrofon ditolak: '+(e.name||'error'))}}
+function lanOff(){if(lanStream){lanStream.getTracks().forEach(t=>t.stop());lanStream=null}}
+const idOf=sdp=>(((sdp.match(/a=ice-ufrag:(\S+)/)||[])[1]||'')+((sdp.match(/a=ice-pwd:(\S+)/)||[])[1]||'')+'00000').replace(/[^A-Za-z0-9]/g,'').slice(0,5);
+const errm=e=>'Gagal: '+String((e&&((e.name?e.name+': ':'')+(e.message||'')))||e).slice(0,160);
+function dec(str){str=ext(str);if(!str)throw new Error('Kode tidak ditemukan. Salin ulang seluruh kode.');
+ if(str[0]==='F'){const o=JSON.parse(decodeURIComponent(escape(atob(str.slice(1)))));return{type:o.t,sdp:o.s}}
+ const [ty,u,p,fp,cs]=str.split('|'),offer=ty==='O';if(!u||!p||!fp)throw new Error('Format kode tidak lengkap. Salin ulang seluruh kode.');
+ const fh=[...atob(fp)].map(c=>c.charCodeAt(0).toString(16).padStart(2,'0').toUpperCase()).join(':');
+ const cl=(cs||'').split(';').filter(Boolean).map((c,i)=>{const [ip,port,t]=c.split(','),typ=t==='s'?'srflx':t==='r'?'relay':'host';
+  return `a=candidate:${i+1} 1 udp ${2113937151-i*1000} ${ip} ${port} typ ${typ}`+(typ==='host'?'':' raddr 0.0.0.0 rport 0')});
+ const sdp=['v=0','o=- 1 2 IN IP4 127.0.0.1','s=-','t=0 0','a=group:BUNDLE 0','a=msid-semantic: WMS','m=application 9 UDP/DTLS/SCTP webrtc-datachannel','c=IN IP4 0.0.0.0','a=ice-ufrag:'+u,'a=ice-pwd:'+p,'a=ice-options:trickle','a=fingerprint:sha-256 '+fh,'a=setup:'+(offer?'actpass':'active'),'a=mid:0','a=sctp-port:5000','a=max-message-size:262144',...cl,'a=end-of-candidates',''].join('\r\n');
+ return{type:offer?'offer':'answer',sdp}}
+const gathered=pc=>new Promise(r=>{if(pc.iceGatheringState==='complete')return r();const f=()=>{if(pc.iceGatheringState==='complete'){pc.removeEventListener('icegatheringstatechange',f);r()}};pc.addEventListener('icegatheringstatechange',f);setTimeout(r,5000)});
+function copyText(v){const done=()=>toast('Kode disalin');
+ const fb=()=>{const t=document.createElement('textarea');t.value=v;t.style.cssText='position:fixed;left:0;top:0;opacity:0;font-size:16px';document.body.appendChild(t);t.focus();t.select();try{t.setSelectionRange(0,v.length)}catch(e){}let r=false;try{r=document.execCommand('copy')}catch(e){}t.remove();toast(r?'Kode disalin':'Gagal menyalin. Pakai tombol 📤 Kirim.')};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(v).then(done,fb);else fb()}
+function copy(id){const t=typeof id==='string'?$(id):id;copyText(t.value)}
+function send(v){const w=()=>window.open('https://wa.me/?text='+encodeURIComponent(v),'_blank');if(navigator.share)navigator.share({text:v}).catch(e=>{if(!e||e.name!=='AbortError')w()});else w()}
+function mkR(kind){return{presence:async p=>{const m=JSON.stringify(kind==='h'?(mrg(hostPres,p),{h:hostPres}):(mrg(myPres,p),{p:myPres}));chs.forEach(c=>c.readyState==='open'&&c.send(m))},
+ peers:()=>kind==='h'?Object.values(PP).map(x=>({presence:x})):[{presence:hostPres}],onPeers:f=>{cbs.push(f)}}}
+function wire(ch,id){chs.push(ch);
+ ch.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}
+  if(role==='h'&&m.p&&typeof m.p==='object'){PP[id]=m.p;fire()}else if(role==='p'&&m.h&&typeof m.h==='object'){hostPres=m.h;fire()}};
+ ch.onopen=()=>{if(role==='h'){pub();toast('Perangkat tersambung');fire()}else{lanOff();ch.send(JSON.stringify({p:myPres}));const o=$('pov');o&&o.remove();$('st').hidden=false;toast('Tersambung ke host')}};
+ ch.onclose=()=>{chs=chs.filter(c=>c!==ch);delete PP[id];fire();toast('Perangkat terputus')};if(ch.readyState==='open')ch.onopen()}
+function pov(h){let o=$('pov');if(!o){o=document.createElement('div');o.className='ov show';o.id='pov';o.style.zIndex=40;o.innerHTML='<div class="modal" id="pm" style="max-width:540px"></div>';document.body.appendChild(o)}$('pm').innerHTML=h}
+const TA='style="width:100%;font-size:.7rem;border:2px solid var(--line);border-radius:8px;padding:6px"';
+function pmenu(){if(role==='p'){toast('Perangkat ini sudah menjadi pemain');return}
+ pov(`<h2 style="font-size:1.3rem">🔗 Mode 2 Perangkat (tanpa server)</h2><p>Perangkat dihubungkan dengan kode yang disalin dan ditempel (mis. lewat WhatsApp). Perlu internet.</p><button class="btn" id="m1" style="width:100%;margin:4px 0">Saya Guru (Host) — layar utama</button><button class="btn" id="m2" style="width:100%;margin:4px 0;background:var(--x)">Saya Siswa — Tim X</button><button class="btn" id="m3" style="width:100%;margin:4px 0;background:var(--o)">Saya Siswa — Tim O</button><button class="btn l" id="m5" style="width:100%;margin:4px 0">🏠 Wi-Fi sama tapi gagal? Aktifkan mode jaringan lokal</button><p style="font-size:.8rem;margin:0 0 6px">Ini meminta izin mikrofon hanya agar browser menampilkan alamat jaringan lokal. Suara tidak direkam. Lakukan di kedua perangkat sebelum membuat kode.</p><button class="btn l" id="m4" style="width:100%;margin:4px 0">Tutup</button>`);
+ $('m1').onclick=newOffer;$('m2').onclick=()=>playerFlow('X');$('m3').onclick=()=>playerFlow('O');$('m4').onclick=()=>$('pov').remove();$('m5').onclick=lan;if(lanStream)$('m5').textContent='✓ Mode jaringan lokal aktif'}
+function hostPanel(){pov(`<h2>Hubungkan perangkat siswa</h2><p>Satu kotak untuk setiap perangkat. Tambahkan satu perangkat untuk Tim X dan satu untuk Tim O.</p><div id="sl"></div><p><button class="btn" id="ad">＋ Tambah perangkat</button> <button class="btn l" id="cl">Selesai</button></p>`);
+ slots.forEach(x=>$('sl').appendChild(x.el));$('ad').onclick=addSlot;$('cl').onclick=()=>{lanOff();$('pov').remove()}}
+function newOffer(){if(!window.RTCPeerConnection){toast('Browser ini tidak mendukung WebRTC');return}
+ if(role!=='h'){role='h';R=mkR('h');R.onPeers(hostPeers);$('st').hidden=false;pub();hostPeers()}
+ hostPanel();if(!slots.length)addSlot()}
+async function addSlot(){
+ const id='d'+(++pend),pc=new RTCPeerConnection(ICE),ch=pc.createDataChannel('g');wire(ch,id);
+ const el=document.createElement('div');el.style.cssText='border:2px solid var(--line);border-radius:12px;padding:10px;margin:8px 0';
+ el.innerHTML=`<b class="hd">Perangkat ${slots.length+1}</b> — <span class="ss">menunggu jawaban…</span><p style="margin:6px 0 2px">1. Salin kode ini, kirim ke HP siswa:</p><textarea rows="3" inputmode="none" onfocus="this.select()" class="oc" ${TA}></textarea><p style="margin:4px 0"><button class="btn cp">📋 Salin Kode</button> <button class="btn sd">📤 Kirim</button> <button class="btn l fl">Coba kode ringkas</button></p><p class="nt" style="margin:2px 0;font-size:.8rem;color:#92400e"></p><p style="margin:6px 0 2px">2. Tempel kode jawaban dari siswa ini:</p><textarea rows="3" class="ac" ${TA} placeholder="Tempel kode jawaban perangkat ini di sini"></textarea><p style="margin:4px 0"><button class="btn cn">Sambungkan</button> <span class="er" style="color:#b91c1c;font-size:.85rem"></span></p>`;
+ const q=c=>el.querySelector(c);const x={id,el,ss:q('.ss'),pc,st:'',applied:false};slots.push(x);pc.oniceconnectionstatechange=()=>{x.st=pc.iceConnectionState;fire()};$('sl').appendChild(el);q('.oc').value='Menyiapkan kode…';
+ await pc.setLocalDescription(await pc.createOffer());await gathered(pc);q('.oc').value=enc(pc.localDescription,true);if(/\.local\b/.test(pc.localDescription.sdp)&&!lanStream)q('.nt').textContent=NOTE;
+ const n=slots.indexOf(x)+1,tag=idOf(pc.localDescription.sdp);x.tag=tag;x.lb='[Perangkat '+n+' · ID '+tag+'] ';q('.oc').value=x.lb+q('.oc').value;q('.hd').textContent='Perangkat '+n+' · ID '+tag;
+ q('.cp').onclick=()=>copy(q('.oc'));q('.sd').onclick=()=>send(q('.oc').value);q('.fl').onclick=()=>{q('.oc').value=x.lb+enc(pc.localDescription);toast('Kode ringkas ditampilkan. Salin lagi.')};
+ q('.cn').onclick=async()=>{if(x.applied||pc.signalingState==='stable'){q('.er').textContent='Jawaban sudah dimasukkan. Menunggu koneksi…';return}
+  const mt=q('.ac').value.match(/untuk ID ([A-Za-z0-9]{5})/);if(mt&&mt[1]!==x.tag){const o=slots.find(z=>z.tag===mt[1]);q('.er').textContent=o?'Kode jawaban ini untuk '+o.el.querySelector('.hd').textContent+'. Tempel di kotak itu.':'Kode jawaban ini bukan untuk kotak ini (ID '+mt[1]+'). Periksa kode yang dikirim ke siswa.';return}
+  try{await pc.setRemoteDescription(dec(q('.ac').value));x.applied=true;q('.er').textContent='';toast('Menyambungkan…');fire();
+   setTimeout(()=>{if(!PP[id]){x.st='failed';fire();q('.er').textContent=ADV}},20000)}catch(e){const m=errm(e);q('.er').textContent=m;toast(m)}}}
+function playerFlow(team){if(!window.RTCPeerConnection){toast('Browser ini tidak mendukung WebRTC');return}
+ pov(`<h2>Gabung sebagai Tim ${team}</h2><p><b>Langkah 1.</b> Tempel kode dari guru:</p><textarea id="oc" rows="4" ${TA} placeholder="Tempel kode dari guru di sini"></textarea><p><button class="btn" id="mk">Buat Kode Jawaban</button> <button class="btn l" id="cl">Batal</button></p><div id="ans"></div><p id="er" style="color:#b91c1c;font-size:.85rem"></p>`);
+ $('cl').onclick=()=>$('pov').remove();
+ $('mk').onclick=async()=>{try{const tg=(($('oc').value.match(/ID ([A-Za-z0-9]{5})/)||[])[1])||'';const pc=new RTCPeerConnection(ICE);pc.ondatachannel=e=>wire(e.channel,'h');
+  role='p';myTeam=team;R=mkR('p');myPres={r:'p',team};cbs=[];R.onPeers(playerPeers);document.body.classList.add('player');
+  await pc.setRemoteDescription(dec($('oc').value));await pc.setLocalDescription(await pc.createAnswer());await gathered(pc);const c=enc(pc.localDescription,true),lbl=tg?'[Jawaban untuk ID '+tg+' · Tim '+team+'] ':'[Jawaban Tim '+team+'] ';
+  $('ans').innerHTML=`<p><b>Langkah 2.</b> Salin kode jawaban ini dan kirim balik ke guru:</p><textarea id="ac" rows="4" inputmode="none" onfocus="this.select()" ${TA}>${lbl}${c}</textarea><p><button class="btn" id="cp">📋 Salin Kode Jawaban</button> <button class="btn" id="sd">📤 Kirim ke Guru</button> <button class="btn l" id="fl">Coba kode ringkas</button></p><p id="ps">Menunggu guru menyambungkan…</p>`;if(/\.local\b/.test(pc.localDescription.sdp)&&!lanStream)$('ps').textContent+=' '+NOTE;setTimeout(()=>{const e=$('ps');if(e)e.textContent=ADV2+' '+NOTE},45000);$('cp').onclick=()=>copy('ac');$('sd').onclick=()=>send($('ac').value);$('fl').onclick=()=>{$('ac').value=lbl+enc(pc.localDescription);toast('Kode ringkas ditampilkan. Salin lagi.')}}
+  catch(e){const m=errm(e);$('er').textContent=m;toast(m);role='';document.body.classList.remove('player')}}}
+function pub(){if(role!=='h'||!R)return;
+ R.presence({r:'h',b:own.map(x=>x||'.').join(''),sx:score.X,so:score.O,t:turn,n:++seq,
+  q:cur?{c:cur.i,k:BANK.indexOf(cur.q),o:cur.opts.map(x=>cur.q.indexOf(x.t)-2).join('')}:null}).catch(()=>{})}
+function hostPeers(){if(role!=='h')return;const ps=R.peers();const n=t=>ps.filter(p=>p.presence.team===t).length;
+ $('st').innerHTML=`<span>Perangkat terhubung: ${ps.length}</span><span>Tim X: ${n('X')}</span><span>Tim O: ${n('O')}</span>`;
+ slots.forEach(x=>{const ok=!!PP[x.id];x.ss.textContent=ok?'✓ tersambung · Tim '+(PP[x.id].team||'?'):!x.applied?'menunggu jawaban…':(x.st==='failed'||x.st==='disconnected')?'gagal tersambung':'menghubungkan…';if(ok)x.el.querySelector('.er').textContent=''});
+ if(!cur)return;const k=BANK.indexOf(cur.q);
+ for(const p of ps){const a=p.presence.a;if(p.presence.team===turn&&a&&a.k===k&&a.c===cur.i&&Number.isInteger(a.p)&&a.p>=0&&a.p<5){if(!ap){ap=true;const bs=$('qm').querySelectorAll('.opt');if(bs[a.p])bs[a.p].style.background='#dbeafe';toast('Tim '+turn+' memilih '+L[a.p]);setTimeout(()=>{ap=false;if(cur&&BANK.indexOf(cur.q)===k&&cur.i===a.c)answer(a.p)},900)}break}}}
+function showQ(q,t){const Q=BANK[q.k];if(!Q)return;const mine=t===myTeam;
+ $('qm').innerHTML=`<h2>Kotak ${q.c+1} · Giliran Tim ${t}${mine?' (Tim Anda)':''}</h2><div class="tm"><div class="bar"><div id="tb"></div></div><b id="tt">30</b></div>${Q[0]?`<div class="ref">${REF[Q[0]]||esc(Q[0].slice(1))}</div>`:''}<div class="q">${esc(Q[1])}</div>`+
+ [...q.o].map((x,p)=>`<button class="opt" data-p="${p}"${mine?'':' disabled'}><i>${L[p]}</i><span>${esc(Q[2+Number(x)])}</span></button>`).join('')+(mine?'':`<p>Menunggu Tim ${t} menjawab…</p>`);
+ $('qm').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{R.presence({a:{k:q.k,c:q.c,p:+b.dataset.p}});$('qm').querySelectorAll('.opt').forEach(o=>o.disabled=true);b.style.borderColor='#2563eb';toast('Jawaban terkirim')});
+ $('qov').classList.add('show');clearInterval(tI);tL=30;tick();tI=setInterval(()=>{tL=Math.max(0,tL-1);tick()},1000)}
+function playerPeers(){if(role!=='p')return;const s=hostPres;
+ if(!s||s.r!=='h'){$('st').innerHTML='<span>Menunggu data dari host…</span>';return}
+ $('st').innerHTML=`<span>Anda: Tim ${myTeam}</span><span>Tersambung ke host</span>`;
+ const b=String(s.b||'.'.repeat(16));
+ $('sx').textContent=s.sx;$('so').textContent=s.so;$('bx').classList.toggle('on',s.t==='X');$('bo').classList.toggle('on',s.t==='O');
+ const cells=$('board').children;
+ for(let i=0;i<16;i++){const c=b[i],cl=cells[i],was=cl.classList.contains('x')?'X':cl.classList.contains('o')?'O':'.';
+  if(c!==was){cl.className='cell';if(c==='X'||c==='O'){cl.classList.add(c.toLowerCase());cl.innerHTML=`<span>${c}</span>`}else cl.textContent=i+1}}
+ const ws=LINES.filter(l=>l.every(c=>b[c]!=='.'&&b[c]===b[l[0]])),key=ws.map(l=>l.join()).join('|');
+ if(key!==lastKey){lastKey=key;$('wl').innerHTML=ws.map(l=>{const p=c=>[(c%4+.5)*25,(Math.floor(c/4)+.5)*25],a=p(l[0]),z=p(l[3]);return `<line x1="${a[0]}" y1="${a[1]}" x2="${z[0]}" y2="${z[1]}"/>`}).join('')}
+ const q=s.q;
+ if(q){const id=q.k+'-'+q.c;if(id!==curK){curK=id;R.presence({a:null});showQ(q,s.t)}}
+ else if(curK){curK='';$('qov').classList.remove('show');clearInterval(tI);
+  const cnt=x=>[...x].filter(z=>z!=='.').length;if(cnt(b)>cnt(lastB))sfx(s.t==='X'?'O':'X');else buzz()}
+ lastB=b}
+$('pb').onclick=pmenu;
+init();
+</script></body></html>
